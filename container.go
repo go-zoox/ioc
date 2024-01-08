@@ -100,6 +100,8 @@ func (c *container) ForEach(fn func(id string, service any)) {
 	defer c.RUnlock()
 
 	for id, service := range c.registry {
-		fn(id, service)
+		func(id string, service any) {
+			fn(id, service)
+		}(id, service)
 	}
 }
