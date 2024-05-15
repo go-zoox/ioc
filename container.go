@@ -16,7 +16,8 @@ type Container interface {
 	Has(id string) bool
 	//
 	Length() int
-	ForEach(fn func(id string, service any))
+	//
+	ForEach(fn func(id string, service any) error) (err error)
 }
 
 type container struct {
@@ -95,13 +96,18 @@ func (c *container) Length() int {
 }
 
 // ForEach loops the services of the container
-func (c *container) ForEach(fn func(id string, service any)) {
+func (c *container) ForEach(fn func(id string, service any) error) (err error) {
 	c.RLock()
 	defer c.RUnlock()
 
 	for id, service := range c.registry {
 		func(id string, service any) {
-			fn(id, service)
+			err = fn(id, service)
 		}(id, service)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
